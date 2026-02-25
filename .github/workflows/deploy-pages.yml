@@ -16,7 +16,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  skip-private:
+    if: ${{ github.event.repository.private }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip deployment for private repository
+        run: echo "Skipping GitHub Pages deploy because this repository is private on a plan without Pages support."
+
   build:
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,8 +32,6 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,6 +54,7 @@ jobs:
           path: ./out
 
   deploy:
+    if: ${{ !github.event.repository.private }}
     needs: build
     runs-on: ubuntu-latest
     environment:
