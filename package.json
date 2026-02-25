@@ -1,0 +1,29 @@
+{
+  "name": "upload-photos-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^5.15.11",
+    "@yachtway/design-system": "file:vendor/yachtway-design-system-0.5.6.tgz",
+    "next": "14.2.26",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.30",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.26",
+    "typescript": "^5.8.3"
+  }
+}

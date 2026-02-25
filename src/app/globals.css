@@ -1,0 +1,743 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #f1f1f2;
+  color: var(--gray-900, #2f2f39);
+  font-family: var(--font-figtree), sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.uploadPage {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background-image:
+    linear-gradient(173deg, #08070c 2%, #201235 56%, #1d285a 88%, #002650 114%),
+    linear-gradient(90deg, #22222d 0%, #22222d 100%);
+  color: #fff;
+  padding: 40px 24px;
+  width: 260px;
+}
+
+.sidebarTitle {
+  font-family: var(--font-red-hat-display), sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  margin: 0 0 26px;
+}
+
+.stepList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stepItem {
+  color: rgb(255 255 255 / 62%);
+  font-size: 15px;
+  line-height: 22px;
+  padding: 8px 0;
+}
+
+.stepItem.done {
+  color: rgb(255 255 255 / 82%);
+}
+
+.stepItem.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+.mainSection {
+  flex: 1;
+  overflow: auto;
+  padding: 40px 36px 56px;
+}
+
+.contentWrap {
+  margin: 0 auto;
+  max-width: 980px;
+}
+
+.headerRow {
+  margin-bottom: 20px;
+}
+
+.pageTitle {
+  font-family: var(--font-red-hat-display), sans-serif;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 40px;
+  margin: 0;
+}
+
+.pageSubtitle {
+  color: var(--gray-700, #61616b);
+  font-size: 14px;
+  line-height: 20px;
+  margin: 10px 0 0;
+  max-width: 680px;
+}
+
+.toolbarRow {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.counterText {
+  color: var(--gray-700, #61616b);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  margin: 0;
+}
+
+.addMenuWrap {
+  position: relative;
+}
+
+.addVideoTrigger {
+  background: var(--brand-700, #4b0ea3);
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 40px;
+  line-height: 20px;
+  padding: 0 16px;
+}
+
+.addVideoTrigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.addVideoMenu {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(24 26 32 / 14%);
+  min-width: 220px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 44px;
+  z-index: 30;
+}
+
+.addVideoMenuItem {
+  background: #fff;
+  border: 0;
+  color: #30303a;
+  cursor: pointer;
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 11px 14px;
+  text-align: left;
+  width: 100%;
+}
+
+.addVideoMenuItem:hover {
+  background: #f7f3fe;
+}
+
+.dropZone {
+  align-items: center;
+  background: #f8f1ff;
+  border: 2px dashed #ccb9e7;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 196px;
+  padding: 28px;
+  text-align: center;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.dropZone.isDragActive {
+  background: #efe3fd;
+  border-color: #8e60cc;
+}
+
+.dropIcon {
+  align-items: center;
+  background: #e4d3fb;
+  border-radius: 999px;
+  color: var(--brand-700, #4b0ea3);
+  display: inline-flex;
+  font-size: 20px;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.dropPrimary {
+  color: var(--brand-700, #4b0ea3);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  margin: 0;
+}
+
+.dropSecondary {
+  color: #8052be;
+  font-size: 13px;
+  line-height: 19px;
+  margin: 0;
+}
+
+.noticeText {
+  color: var(--gray-700, #61616b);
+  font-size: 13px;
+  line-height: 19px;
+  margin: 10px 2px 0;
+}
+
+.bulkActionsSticky {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+}
+
+.bulkActionsBar {
+  align-items: center;
+  background: #5b5c67;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  min-height: 48px;
+  padding: 8px;
+}
+
+.bulkSelectedCount {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  padding: 0 8px;
+}
+
+.bulkDeleteButton {
+  background: #fff;
+  border: 0;
+  border-radius: 6px;
+  color: var(--danger, #dc362e);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 34px;
+  line-height: 20px;
+  padding: 0 12px;
+}
+
+.videoGridWrap {
+  margin-top: 16px;
+  position: relative;
+}
+
+.videoGridWrap.isSelecting {
+  cursor: crosshair;
+}
+
+.videoGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.selectionMarquee {
+  background: rgb(75 14 163 / 8%);
+  border: 1px dashed #4b0ea3;
+  border-radius: 4px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 25;
+}
+
+.videoCardFrame {
+  position: relative;
+  user-select: none;
+}
+
+.videoCard {
+  background: #fff;
+  border: 2px solid #f6f6f7;
+  border-radius: 8px;
+  overflow: hidden;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.videoCardFrame.isSelected .videoCard {
+  background: #f3edfd;
+  border-color: #ccb9e7;
+}
+
+.videoCardHeader {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 8px;
+}
+
+.videoTitle {
+  color: #2f2f39;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.videoMenuButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #2f2f39;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 17px;
+  height: 24px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+}
+
+.videoThumbWrap {
+  --video-scale: 1;
+  aspect-ratio: 16 / 9;
+  background: #f4f4f4;
+  overflow: hidden;
+  position: relative;
+  transition: background-color 0.16s ease;
+}
+
+.videoCardFrame.isSelected .videoThumbWrap {
+  --video-scale: 0.9;
+  background: #e9dbfb;
+}
+
+.videoThumb {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(var(--video-scale, 1));
+  transition: transform 0.2s ease;
+  width: 100%;
+}
+
+.coverBadge {
+  background: #fcfafe;
+  border: 1px solid #ccb9e7;
+  border-radius: 999px;
+  color: #7e52be;
+  font-size: 11px;
+  font-weight: 600;
+  left: 8px;
+  line-height: 16px;
+  padding: 2px 8px;
+  position: absolute;
+  top: 8px;
+  z-index: 3;
+}
+
+.videoHoverOverlay {
+  background: rgb(34 34 34 / 52%);
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.14s ease;
+}
+
+.videoCard:hover .videoHoverOverlay,
+.videoCardFrame.isSelected .videoHoverOverlay {
+  opacity: 1;
+}
+
+.videoPlayButton {
+  align-items: center;
+  background: rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 50%);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 20px;
+  height: 40px;
+  justify-content: center;
+  left: calc(50% - 20px);
+  line-height: 1;
+  padding: 0 0 0 2px;
+  pointer-events: auto;
+  position: absolute;
+  top: calc(50% - 20px);
+  width: 40px;
+}
+
+.videoSelectButton {
+  align-items: center;
+  background: rgb(231 232 234 / 92%);
+  border: 0;
+  border-radius: 999px;
+  bottom: 10px;
+  color: #2f2f39;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  height: 28px;
+  justify-content: center;
+  pointer-events: auto;
+  position: absolute;
+  right: 10px;
+  width: 28px;
+}
+
+.videoSelectButton.isSelected,
+.videoCardFrame.isSelected .videoSelectButton {
+  background: #4b0ea3;
+  color: #fff;
+}
+
+.videoMenu {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgb(24 26 32 / 16%);
+  min-width: 148px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 40px;
+  z-index: 30;
+}
+
+.videoMenuItem {
+  background: #fff;
+  border: 0;
+  color: #2f2f39;
+  cursor: pointer;
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.videoMenuItem:hover {
+  background: #f8f8f9;
+}
+
+.videoMenuItem.isDestructive {
+  color: var(--danger, #dc362e);
+}
+
+.youtubeModalOverlay,
+.playerOverlay {
+  align-items: center;
+  backdrop-filter: blur(2px);
+  background: rgb(14 14 19 / 66%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 50;
+}
+
+.youtubeModal {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 560px;
+  padding: 18px;
+  width: 100%;
+}
+
+.youtubeModalHeader {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.youtubeModalHeader h2 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+  margin: 0;
+}
+
+.youtubeModalHeader p {
+  color: #62626d;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 4px 0 0;
+}
+
+.modalCloseButton {
+  align-items: center;
+  background: #f3f3f4;
+  border: 0;
+  border-radius: 999px;
+  color: #2f2f39;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 22px;
+  height: 32px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+}
+
+.youtubeFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.youtubeFieldRow {
+  position: relative;
+}
+
+.youtubeInput {
+  background: #fff;
+  border: 1px solid #d5d6da;
+  border-radius: 8px;
+  color: #2f2f39;
+  font-size: 14px;
+  height: 42px;
+  line-height: 20px;
+  padding: 0 42px 0 12px;
+  width: 100%;
+}
+
+.youtubeInput:focus {
+  border-color: #6a2cc6;
+  outline: 0;
+}
+
+.youtubeInput.isError {
+  border-color: #dc362e;
+}
+
+.removeLinkButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #767680;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 20px;
+  height: 24px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: 10px;
+  top: 9px;
+  width: 24px;
+}
+
+.fieldError {
+  color: #dc362e;
+  font-size: 12px;
+  line-height: 16px;
+  margin: 4px 2px 0;
+}
+
+.addNewLinkButton {
+  background: transparent;
+  border: 0;
+  color: #4b0ea3;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  margin-top: 8px;
+  padding: 0;
+}
+
+.addNewLinkButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.youtubeModalFooter {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modalSecondaryButton,
+.modalPrimaryButton {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 40px;
+  line-height: 20px;
+  padding: 0 16px;
+}
+
+.modalSecondaryButton {
+  background: #f0f0f2;
+  color: #2f2f39;
+}
+
+.modalPrimaryButton {
+  background: #4b0ea3;
+  color: #fff;
+}
+
+.playerDialog {
+  max-height: calc(100vh - 40px);
+  max-width: min(1100px, calc(100vw - 40px));
+  position: relative;
+  width: 100%;
+}
+
+.playerVideo,
+.playerIframe {
+  background: #000;
+  border: 0;
+  border-radius: 10px;
+  display: block;
+  height: min(76vh, 680px);
+  width: 100%;
+}
+
+.playerCloseButton {
+  align-items: center;
+  background: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 26px;
+  height: 36px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 36px;
+}
+
+@media (max-width: 1120px) {
+  .videoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 920px) {
+  .uploadPage {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .stepList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+  }
+
+  .mainSection {
+    padding: 24px 16px 40px;
+  }
+
+  .pageTitle {
+    font-size: 30px;
+    line-height: 36px;
+  }
+}
+
+@media (max-width: 680px) {
+  .toolbarRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .addMenuWrap {
+    width: 100%;
+  }
+
+  .addVideoTrigger {
+    width: 100%;
+  }
+
+  .addVideoMenu {
+    left: 0;
+    right: auto;
+    width: 100%;
+  }
+
+  .videoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bulkActionsBar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bulkDeleteButton {
+    width: 100%;
+  }
+
+  .youtubeModal {
+    padding: 16px 14px;
+  }
+
+  .youtubeModalHeader h2 {
+    font-size: 22px;
+  }
+
+  .playerVideo,
+  .playerIframe {
+    height: min(64vh, 420px);
+  }
+}
