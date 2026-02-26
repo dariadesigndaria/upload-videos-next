@@ -1,7 +1,16 @@
 'use client';
 
-import { SpriteIcon } from '@yachtway/design-system/src/components/common/sprite-icon';
-import type { ChangeEvent, CSSProperties, DragEvent } from 'react';
+import { Button } from '@yachtway/design-system/src/components/common/button';
+import { ButtonWithDropdown } from '@yachtway/design-system/src/components/common/button-with-dropdown';
+import { Chip } from '@yachtway/design-system/src/components/common/chip';
+import { CompatModal } from '@yachtway/design-system/src/components/common/compat-modal';
+import {
+  SpriteIcon,
+  type SpriteIconNames,
+} from '@yachtway/design-system/src/components/common/sprite-icon';
+import { TextField } from '@yachtway/design-system/src/components/common/text-field';
+import type { MenuItemProps } from '@yachtway/design-system/src/typings';
+import type { ChangeEvent, DragEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const MAX_VIDEOS = 5;
@@ -29,6 +38,30 @@ type SelectionBox = {
   width: number;
 };
 
+type SidebarStep = {
+  icon: SpriteIconNames;
+  id: string;
+  isActive?: boolean;
+  isDone?: boolean;
+  label: string;
+};
+
+const sidebarSteps: SidebarStep[] = [
+  { icon: 'new_listing', id: 'general', isDone: true, label: 'General Info' },
+  { icon: 'flash_outline', id: 'power', isDone: true, label: 'Power' },
+  {
+    icon: 'popular_features',
+    id: 'features',
+    isDone: true,
+    label: 'Vessel Features',
+  },
+  { icon: 'bed_outline', id: 'accommodation', isDone: true, label: 'Accommodation' },
+  { icon: 'photo_camera_outline', id: 'photos', isDone: true, label: 'Upload Photos' },
+  { icon: 'video_outline', id: 'video', isActive: true, label: 'Upload Video' },
+  { icon: 'd_tour_outline', id: 'tour', label: '3D Tour & Brochure' },
+  { icon: 'list_outline', id: 'summary', label: 'Listing Summary' },
+];
+
 let nextVideoId = 0;
 const createVideoId = () => {
   nextVideoId += 1;
@@ -44,7 +77,12 @@ const isAcceptedVideo = (file: File) => {
 };
 
 const isYoutubeHost = (hostname: string) => {
-  return hostname === 'youtube.com' || hostname === 'www.youtube.com' || hostname === 'm.youtube.com' || hostname === 'youtu.be';
+  return (
+    hostname === 'youtube.com' ||
+    hostname === 'www.youtube.com' ||
+    hostname === 'm.youtube.com' ||
+    hostname === 'youtu.be'
+  );
 };
 
 const parseYouTubeId = (rawValue: string): string | null => {
@@ -119,7 +157,6 @@ export default function Page() {
   const [videos, setVideos] = useState<VideoCard[]>([]);
   const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
   const [isDropActive, setIsDropActive] = useState(false);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [menuVideoId, setMenuVideoId] = useState<string | null>(null);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>(['']);
@@ -131,7 +168,6 @@ export default function Page() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepthRef = useRef(0);
   const objectUrlsRef = useRef<Set<string>>(new Set());
-  const addMenuWrapRef = useRef<HTMLDivElement>(null);
   const videoGridRef = useRef<HTMLDivElement>(null);
   const selectedIdsRef = useRef<Set<string>>(new Set());
   const suppressCardClickRef = useRef(false);
@@ -263,16 +299,15 @@ export default function Page() {
     event.currentTarget.value = '';
   };
 
-  const handleDropZoneClick = () => {
+  const openFileUpload = useCallback(() => {
     if (videos.length >= MAX_VIDEOS) {
       setUploadNotice('Video limit reached. Maximum 5 videos.');
       return;
     }
 
-    setIsAddMenuOpen(false);
     setMenuVideoId(null);
     fileInputRef.current?.click();
-  };
+  }, [videos.length]);
 
   const handleDropZoneDragEnter = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -413,7 +448,7 @@ export default function Page() {
         return;
       }
 
-      if (event.target.closest('.sidebar') || isMarqueeInteractiveTarget(event.target)) {
+      if (event.target.closest('.uploadStepper') || isMarqueeInteractiveTarget(event.target)) {
         return;
       }
 
@@ -512,10 +547,6 @@ export default function Page() {
 
       const { target } = event;
 
-      if (isAddMenuOpen && addMenuWrapRef.current && !addMenuWrapRef.current.contains(target)) {
-        setIsAddMenuOpen(false);
-      }
-
       if (target.closest('.videoMenu') || target.closest('.videoMenuButton')) {
         return;
       }
@@ -530,7 +561,7 @@ export default function Page() {
         Boolean(target.closest('.videoGridWrap')) ||
         Boolean(target.closest('.videoCardFrame')) ||
         Boolean(target.closest('.bulkActionsSticky')) ||
-        Boolean(target.closest('.youtubeModal')) ||
+        Boolean(target.closest('.youtubeModalBody')) ||
         Boolean(target.closest('.playerDialog')) ||
         Boolean(target.closest('.dropZone'));
 
@@ -551,11 +582,6 @@ export default function Page() {
         return;
       }
 
-      if (isAddMenuOpen) {
-        setIsAddMenuOpen(false);
-        return;
-      }
-
       if (isYoutubeModalOpen) {
         setIsYoutubeModalOpen(false);
         return;
@@ -573,20 +599,19 @@ export default function Page() {
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [clearSelection, isAddMenuOpen, isYoutubeModalOpen, menuVideoId, playerVideoId]);
+  }, [clearSelection, isYoutubeModalOpen, menuVideoId, playerVideoId]);
 
-  const openYoutubeModal = () => {
+  const openYoutubeModal = useCallback(() => {
     if (videos.length >= MAX_VIDEOS) {
       setUploadNotice('Video limit reached. Maximum 5 videos.');
       return;
     }
 
-    setIsAddMenuOpen(false);
     setMenuVideoId(null);
     setYoutubeLinks(['']);
     setYoutubeErrors(['']);
     setIsYoutubeModalOpen(true);
-  };
+  }, [videos.length]);
 
   const submitYoutubeLinks = () => {
     const remaining = MAX_VIDEOS - videos.length;
@@ -673,111 +698,113 @@ export default function Page() {
   const selectedCount = selectedVideoIds.size;
   const nonEmptyYoutubeCount = youtubeLinks.filter((value) => value.trim().length > 0).length;
 
-  const pageStyle = {
-    '--brand-700': '#4b0ea3',
-    '--brand-100': '#f3edfd',
-    '--gray-900': '#2f2f39',
-    '--gray-700': '#61616b',
-    '--gray-500': '#8c8c92',
-    '--gray-100': '#f1f1f2',
-    '--gray-50': '#f8f8f9',
-    '--danger': '#dc362e',
-  } as CSSProperties;
+  const addVideoMenuItems = useMemo<MenuItemProps[]>(
+    () => [
+      {
+        icon: <SpriteIcon name="upload_outline" className="menuItemIcon" aria-hidden="true" />,
+        label: 'Upload from your devise',
+        onClick: () => openFileUpload(),
+      },
+      {
+        icon: <SpriteIcon name="link_outline" className="menuItemIcon" aria-hidden="true" />,
+        label: 'Link to Youtube',
+        onClick: () => openYoutubeModal(),
+      },
+    ],
+    [openFileUpload, openYoutubeModal],
+  );
 
   return (
-    <main className="uploadPage" style={pageStyle}>
-      <aside className="sidebar" data-no-marquee="true">
-        <h2 className="sidebarTitle">CREATE NEW LISTING</h2>
-        <ol className="stepList">
-          <li className="stepItem done">
-            <SpriteIcon name="checkmark_solid" className="stepIcon" aria-hidden="true" />
-            <span>General Info</span>
-          </li>
-          <li className="stepItem done">
-            <SpriteIcon name="checkmark_solid" className="stepIcon" aria-hidden="true" />
-            <span>Upload Photos</span>
-          </li>
-          <li className="stepItem active">
-            <span className="stepDot" aria-hidden="true" />
-            <span>Upload Videos</span>
-          </li>
-          <li className="stepItem">
-            <span className="stepDot" aria-hidden="true" />
-            <span>Listing Summary</span>
-          </li>
-        </ol>
-      </aside>
-
-      <section className="mainSection">
-        <div className="mainTopRow" data-no-marquee="true">
-          <div className="listingHeatChip">
-            <SpriteIcon name="snowflake_outline" className="chipIcon" aria-hidden="true" />
-            <span>Listing Heat</span>
+    <main className="uploadPage">
+      <aside className="uploadStepper" data-no-marquee="true">
+        <div className="stepperLogoRow">
+          <div className="stepperLogoWrap">
+            <p className="stepperLogoText">YACHT WAY</p>
           </div>
-
-          <button type="button" className="draftExitButton" data-no-marquee="true">
-            Save to Drafts &amp; Exit
-          </button>
+          <SpriteIcon name="search_outline" className="stepperSearchIcon" aria-hidden="true" />
         </div>
 
-        <div className="contentWrap">
-          <header className="headerRow">
-            <div>
-              <h1 className="pageTitle">Upload Video</h1>
-              <p className="pageSubtitle">
-                Add up to 5 videos (YouTube links or uploads). Max 200 MB per file. MP4, MOV,
-                WEBM, MPEG.
-              </p>
+        <ol className="stepperList">
+          {sidebarSteps.map((step) => {
+            const stepStateClass = step.isActive ? 'isActive' : step.isDone ? 'isDone' : 'isDisabled';
+            return (
+              <li key={step.id} className={`stepperItem ${stepStateClass}`}>
+                <div className="stepperItemMain">
+                  <span className="stepperIconWrap" aria-hidden="true">
+                    <SpriteIcon
+                      name={step.icon}
+                      className="stepperIcon"
+                    />
+                  </span>
+                  <span className="stepperLabel">{step.label}</span>
+                </div>
+
+                {step.isDone ? (
+                  <span className="stepperItemActions" aria-hidden="true">
+                    <SpriteIcon name="checkmark_solid" className="stepperActionIcon" />
+                    <SpriteIcon name="pen_outline" className="stepperActionIcon" />
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ol>
+
+        <p className="stepperFooter">CREATE NEW LISTING</p>
+      </aside>
+
+      <section className="uploadMainSection">
+        <div className="uploadMainHead" data-no-marquee="true">
+          <Button
+            variant="new-ghost"
+            color="basic"
+            size="small"
+            className="saveDraftButton"
+          >
+            Save to Drafts &amp; Exit
+          </Button>
+        </div>
+
+        <div className="uploadContent">
+          <header className="uploadHeader">
+            <div className="uploadHeaderTitleRow">
+              <h1 className="uploadTitle">Upload Video</h1>
+              <Chip className="listingHeatChip">
+                <SpriteIcon name="snowflake_outline" className="listingHeatSnowflake" aria-hidden="true" />
+                <span className="listingHeatText">Listing Heat: <b>Freezing</b></span>
+                <span className="listingHeatInfo" aria-hidden="true">
+                  <SpriteIcon name="question_outline" className="listingHeatInfoIcon" />
+                </span>
+              </Chip>
             </div>
+            <p className="uploadSubtitle">
+              Add up to 5 videos (YouTube links or uploads). Max 200 MB per file. MP4, MOV, WEBM, MPEG.
+            </p>
           </header>
 
-          <div className="toolbarRow" data-no-marquee="true">
-            <p className="counterText">{videos.length}/{MAX_VIDEOS} videos added</p>
-
-            <div className="addMenuWrap" ref={addMenuWrapRef}>
-              <button
-                type="button"
-                className="addVideoTrigger"
-                onClick={() => setIsAddMenuOpen((prev) => !prev)}
-                disabled={videos.length >= MAX_VIDEOS}
-                data-no-marquee="true"
-              >
-                <SpriteIcon name="plus_outline" className="addVideoTriggerIcon" aria-hidden="true" />
-                <span>Add Video</span>
-                <SpriteIcon name="chevron_down_outline" className="addVideoTriggerChevron" aria-hidden="true" />
-              </button>
-
-              {isAddMenuOpen ? (
-                <div className="addVideoMenu" role="menu" aria-label="Add video options" data-no-marquee="true">
-                  <button
-                    type="button"
-                    className="addVideoMenuItem"
-                    role="menuitem"
-                    onClick={() => {
-                      setIsAddMenuOpen(false);
-                      fileInputRef.current?.click();
-                    }}
-                  >
-                    <SpriteIcon name="upload_outline" className="addVideoMenuItemIcon" aria-hidden="true" />
-                    <span>Upload from device</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="addVideoMenuItem"
-                    role="menuitem"
-                    onClick={openYoutubeModal}
-                  >
-                    <SpriteIcon name="link_outline" className="addVideoMenuItemIcon" aria-hidden="true" />
-                    <span>Add YouTube link</span>
-                  </button>
-                </div>
-              ) : null}
+          <div className="uploadToolbar" data-no-marquee="true">
+            <div className="uploadCounterWrap">
+              <p className="uploadCounterText">{videos.length}/{MAX_VIDEOS} videos added</p>
+              {videos.length > 0 ? <p className="uploadCounterHint">Drag videos to reorder</p> : null}
             </div>
+
+            <ButtonWithDropdown
+              id="upload-video-menu-top"
+              variant="new-filled"
+              size="extraSmall"
+              items={addVideoMenuItems}
+              className="addVideoButton"
+              disabled={videos.length >= MAX_VIDEOS}
+              startIcon={<SpriteIcon name="plus_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+              endIcon={<SpriteIcon name="chevron_down_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+            >
+              Add Video
+            </ButtonWithDropdown>
           </div>
 
           <div
             className={`dropZone ${isDropActive ? 'isDragActive' : ''}`}
-            onClick={handleDropZoneClick}
+            onClick={openFileUpload}
             onDragEnter={handleDropZoneDragEnter}
             onDragLeave={handleDropZoneDragLeave}
             onDragOver={handleDropZoneDragOver}
@@ -787,20 +814,33 @@ export default function Page() {
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                handleDropZoneClick();
+                openFileUpload();
               }
             }}
           >
-            <div className="dropIcon" aria-hidden="true">
-              <SpriteIcon name="plus_outline" className="dropIconGlyph" />
+            <SpriteIcon name="plus_outline" className="dropZoneTopIcon" aria-hidden="true" />
+
+            <p className="dropZoneTitle">Drag &amp; drop videos here</p>
+            <p className="dropZoneSubtitle">
+              File must be less than 200 MB
+              <br />
+              Files accepted: MP4, MOV, WEBM, and MPEG
+            </p>
+
+            <div data-no-marquee="true" onClick={(event) => event.stopPropagation()}>
+              <ButtonWithDropdown
+                id="upload-video-menu-drop"
+                variant="new-ghost"
+                size="extraSmall"
+                items={addVideoMenuItems}
+                className="dropZoneButton"
+                disabled={videos.length >= MAX_VIDEOS}
+                startIcon={<SpriteIcon name="plus_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+                endIcon={<SpriteIcon name="chevron_down_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+              >
+                Add Video
+              </ButtonWithDropdown>
             </div>
-            <p className="dropPrimary">Drag and drop videos here</p>
-            <p className="dropSecondary">Max 200 MB per file. MP4, MOV, WEBM, MPEG.</p>
-            <button type="button" className="dropGhostButton" data-no-marquee="true">
-              <SpriteIcon name="plus_outline" className="dropGhostButtonIcon" aria-hidden="true" />
-              <span>Add Video</span>
-              <SpriteIcon name="chevron_down_outline" className="dropGhostButtonChevron" aria-hidden="true" />
-            </button>
           </div>
 
           <input
@@ -812,21 +852,22 @@ export default function Page() {
             onChange={handleFileInputChange}
           />
 
-          {uploadNotice ? <p className="noticeText">{uploadNotice}</p> : null}
+          {uploadNotice ? <p className="uploadNotice">{uploadNotice}</p> : null}
 
           {selectedCount > 0 ? (
-            <div className="bulkActionsSticky">
+            <div className="bulkActionsSticky" data-no-marquee="true">
               <div className="bulkActionsBar">
                 <span className="bulkSelectedCount">{selectedCount} selected</span>
-                <button
-                  type="button"
+                <Button
+                  variant="new-danger-filled"
+                  color="basic"
+                  size="extraSmall"
                   className="bulkDeleteButton"
+                  startIcon={<SpriteIcon name="trash_outline" className="toolbarButtonIcon" aria-hidden="true" />}
                   onClick={() => deleteByIds(new Set(selectedVideoIds))}
-                  data-no-marquee="true"
                 >
-                  <SpriteIcon name="trash_outline" className="bulkDeleteIcon" aria-hidden="true" />
-                  <span>Delete selected</span>
-                </button>
+                  Delete selected
+                </Button>
               </div>
             </div>
           ) : null}
@@ -902,7 +943,12 @@ export default function Page() {
                             />
                           )}
 
-                          {index === 0 ? <span className="coverBadge">Cover</span> : null}
+                          {index === 0 ? (
+                            <span className="coverBadge">
+                              Cover
+                              <SpriteIcon name="question_outline" className="coverBadgeIcon" aria-hidden="true" />
+                            </span>
+                          ) : null}
 
                           <div className="videoHoverOverlay">
                             <button
@@ -961,7 +1007,7 @@ export default function Page() {
                               deleteByIds(new Set([video.id]));
                             }}
                           >
-                            <SpriteIcon name="trash_outline" className="videoMenuItemIcon" aria-hidden="true" />
+                            <SpriteIcon name="trash_outline" className="menuItemIcon" aria-hidden="true" />
                             <span>Delete video</span>
                           </button>
                         </div>
@@ -972,6 +1018,25 @@ export default function Page() {
               </div>
             </div>
           ) : null}
+
+          <div className="uploadNavigation" data-no-marquee="true">
+            <Button
+              variant="new-link"
+              color="basic"
+              className="uploadBackButton"
+              startIcon={<SpriteIcon name="arrow_left_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+            >
+              Back
+            </Button>
+            <Button
+              variant="new-filled"
+              size="small"
+              className="uploadSaveNextButton"
+              endIcon={<SpriteIcon name="arrow_right_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+            >
+              Save &amp; Next
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -987,96 +1052,110 @@ export default function Page() {
         />
       ) : null}
 
-      {isYoutubeModalOpen ? (
-        <div className="youtubeModalOverlay" onClick={() => setIsYoutubeModalOpen(false)} data-no-marquee="true">
-          <div className="youtubeModal" onClick={(event) => event.stopPropagation()}>
-            <header className="youtubeModalHeader">
-              <div>
-                <h2>Add Youtube Video</h2>
-                <p>Paste Youtube Link</p>
-              </div>
-              <button
-                type="button"
-                className="modalCloseButton"
-                onClick={() => setIsYoutubeModalOpen(false)}
-                aria-label="Close"
-              >
-                <SpriteIcon name="cross_outline" className="modalCloseIcon" />
-              </button>
-            </header>
-
-            <div className="youtubeFields">
-              {youtubeLinks.map((link, index) => (
-                <div key={`yt-link-${index}`} className="youtubeFieldRow">
-                  <label htmlFor={`yt-link-${index}`} className="youtubeFieldLabel">
-                    Youtube Link {index + 1}
-                  </label>
-
-                  <input
-                    id={`yt-link-${index}`}
-                    type="text"
-                    className={`youtubeInput ${youtubeErrors[index] ? 'isError' : ''}`}
-                    value={link}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setYoutubeLinks((prev) => prev.map((item, itemIndex) => (itemIndex === index ? value : item)));
-                      setYoutubeErrors((prev) => prev.map((item, itemIndex) => (itemIndex === index ? '' : item)));
-                    }}
-                  />
-
-                  {youtubeLinks.length > 1 ? (
-                    <button
-                      type="button"
-                      className="removeLinkButton"
-                      onClick={() => {
-                        setYoutubeLinks((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
-                        setYoutubeErrors((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
-                      }}
-                      aria-label="Remove link"
-                    >
-                      <SpriteIcon name="cross_outline" className="removeLinkIcon" />
-                    </button>
-                  ) : null}
-
-                  {youtubeErrors[index] ? <p className="fieldError">{youtubeErrors[index]}</p> : null}
-                </div>
-              ))}
+      <CompatModal
+        open={isYoutubeModalOpen}
+        onClose={() => setIsYoutubeModalOpen(false)}
+        withHeader={false}
+        className="youtubeModalShell"
+        contentClassName="youtubeModalContent"
+      >
+        <div className="youtubeModalBody" data-no-marquee="true">
+          <header className="youtubeModalHeader">
+            <div>
+              <h2>Add Youtube Video</h2>
+              <p>Paste Youtube Link</p>
             </div>
-
             <button
               type="button"
-              className="addNewLinkButton"
-              onClick={() => {
-                const remaining = MAX_VIDEOS - videos.length;
-                if (youtubeLinks.length >= remaining) {
-                  return;
-                }
-
-                setYoutubeLinks((prev) => [...prev, '']);
-                setYoutubeErrors((prev) => [...prev, '']);
-              }}
-              disabled={youtubeLinks.length >= MAX_VIDEOS - videos.length}
+              className="youtubeModalCloseButton"
+              onClick={() => setIsYoutubeModalOpen(false)}
+              aria-label="Close"
             >
-              <SpriteIcon name="plus_outline" className="addNewLinkIcon" aria-hidden="true" />
-              <span>Add New Link</span>
+              <SpriteIcon name="cross_outline" className="youtubeModalCloseIcon" />
             </button>
+          </header>
 
-            <footer className="youtubeModalFooter">
-              <button
-                type="button"
-                className="modalSecondaryButton"
-                onClick={() => setIsYoutubeModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button type="button" className="modalPrimaryButton" onClick={submitYoutubeLinks}>
-                {nonEmptyYoutubeCount > 1 ? `Add ${nonEmptyYoutubeCount} Videos` : 'Add Video'}
-              </button>
-            </footer>
+          <div className="youtubeFields">
+            {youtubeLinks.map((link, index) => (
+              <div key={`yt-link-${index}`} className="youtubeFieldRow">
+                <label htmlFor={`yt-link-${index}`} className="youtubeFieldLabel">
+                  Youtube Link {index + 1}
+                </label>
+
+                <TextField
+                  id={`yt-link-${index}`}
+                  type="text"
+                  variant="outlined"
+                  size="small"
+                  className={`youtubeInput ${youtubeErrors[index] ? 'isError' : ''}`}
+                  value={link}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setYoutubeLinks((prev) =>
+                      prev.map((item, itemIndex) => (itemIndex === index ? value : item)),
+                    );
+                    setYoutubeErrors((prev) =>
+                      prev.map((item, itemIndex) => (itemIndex === index ? '' : item)),
+                    );
+                  }}
+                  endAdornment={
+                    youtubeLinks.length > 1 ? (
+                      <button
+                        type="button"
+                        className="removeLinkButton"
+                        onClick={() => {
+                          setYoutubeLinks((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+                          setYoutubeErrors((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+                        }}
+                        aria-label="Remove link"
+                      >
+                        <SpriteIcon name="cross_outline" className="removeLinkIcon" />
+                      </button>
+                    ) : undefined
+                  }
+                />
+
+                {youtubeErrors[index] ? <p className="fieldError">{youtubeErrors[index]}</p> : null}
+              </div>
+            ))}
           </div>
+
+          <Button
+            type="button"
+            variant="new-link"
+            className="addNewLinkButton"
+            onClick={() => {
+              const remaining = MAX_VIDEOS - videos.length;
+              if (youtubeLinks.length >= remaining) {
+                return;
+              }
+
+              setYoutubeLinks((prev) => [...prev, '']);
+              setYoutubeErrors((prev) => [...prev, '']);
+            }}
+            disabled={youtubeLinks.length >= MAX_VIDEOS - videos.length}
+            startIcon={<SpriteIcon name="plus_outline" className="toolbarButtonIcon" aria-hidden="true" />}
+          >
+            Add New Link
+          </Button>
+
+          <footer className="youtubeModalFooter">
+            <Button
+              type="button"
+              variant="new-ghost"
+              color="basic"
+              size="small"
+              onClick={() => setIsYoutubeModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" variant="new-filled" size="small" onClick={submitYoutubeLinks}>
+              {nonEmptyYoutubeCount > 1 ? `Add ${nonEmptyYoutubeCount} Videos` : 'Add Video'}
+            </Button>
+          </footer>
         </div>
-      ) : null}
+      </CompatModal>
 
       {activePlayerVideo ? (
         <div className="playerOverlay" onClick={() => setPlayerVideoId(null)} data-no-marquee="true">

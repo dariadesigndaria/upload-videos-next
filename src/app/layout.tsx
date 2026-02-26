@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Figtree, Poppins, Red_Hat_Display } from 'next/font/google';
 
 import './globals.css';
+import Providers from './providers';
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-figtree' });
 const poppins = Poppins({
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${figtree.variable} ${poppins.variable} ${redHatDisplay.variable}`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
