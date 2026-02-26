@@ -1,6 +1,7 @@
 'use client';
 
-import type { ChangeEvent, CSSProperties, DragEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { SpriteIcon } from '@yachtway/design-system/src/components/common/sprite-icon';
+import type { ChangeEvent, CSSProperties, DragEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const MAX_VIDEOS = 5;
@@ -104,6 +105,14 @@ const createYoutubeVideoCard = (url: string): VideoCard | null => {
     thumbnail: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
     youtubeUrl: url.trim(),
   };
+};
+
+const isMarqueeInteractiveTarget = (target: HTMLElement) => {
+  return Boolean(
+    target.closest(
+      "button, a, input, textarea, select, option, iframe, video, [role='button'], [data-no-marquee='true'], .videoInteractive, .youtubeModalOverlay, .playerOverlay",
+    ),
+  );
 };
 
 export default function Page() {
@@ -328,7 +337,6 @@ export default function Page() {
       return;
     }
 
-    const gridRect = grid.getBoundingClientRect();
     const selectionLeft = Math.min(startX, currentX);
     const selectionTop = Math.min(startY, currentY);
     const selectionRight = Math.max(startX, currentX);
@@ -336,8 +344,8 @@ export default function Page() {
 
     setSelectionBox({
       height: selectionBottom - selectionTop,
-      left: selectionLeft - gridRect.left,
-      top: selectionTop - gridRect.top,
+      left: selectionLeft,
+      top: selectionTop,
       width: selectionRight - selectionLeft,
     });
 
@@ -396,6 +404,41 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    const handleGlobalPointerDown = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse' || event.button !== 0 || videos.length === 0) {
+        return;
+      }
+
+      if (!(event.target instanceof HTMLElement)) {
+        return;
+      }
+
+      if (event.target.closest('.sidebar') || isMarqueeInteractiveTarget(event.target)) {
+        return;
+      }
+
+      marqueeArmedRef.current = true;
+      marqueeStartPointRef.current = { x: event.clientX, y: event.clientY };
+      marqueeSelectionModeRef.current = event.altKey
+        ? 'remove'
+        : event.metaKey || event.ctrlKey
+          ? 'add'
+          : selectedIdsRef.current.size > 0
+            ? 'add'
+            : 'replace';
+      marqueeBaselineSelectionRef.current =
+        marqueeSelectionModeRef.current === 'replace' ? new Set() : new Set(selectedIdsRef.current);
+      setSelectionBox(null);
+    };
+
+    document.addEventListener('pointerdown', handleGlobalPointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handleGlobalPointerDown);
+    };
+  }, [videos.length]);
+
+  useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
       if (!isMarqueeSelectingRef.current) {
         if (!marqueeArmedRef.current || !marqueeStartPointRef.current) {
@@ -412,8 +455,10 @@ export default function Page() {
         suppressCardClickRef.current = true;
         isMarqueeSelectingRef.current = true;
         marqueeStartRef.current = marqueeStartPointRef.current;
-        marqueeBaselineSelectionRef.current =
-          marqueeSelectionModeRef.current === 'replace' ? new Set() : new Set(selectedIdsRef.current);
+
+        if (marqueeSelectionModeRef.current === 'replace') {
+          marqueeBaselineSelectionRef.current = new Set();
+        }
       }
 
       if (!marqueeStartRef.current) {
@@ -432,6 +477,8 @@ export default function Page() {
       if (!isMarqueeSelectingRef.current) {
         marqueeArmedRef.current = false;
         marqueeStartPointRef.current = null;
+        marqueeSelectionModeRef.current = 'replace';
+        marqueeBaselineSelectionRef.current = new Set();
         return;
       }
 
@@ -459,7 +506,11 @@ export default function Page() {
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
+      if (!(event.target instanceof HTMLElement)) {
+        return;
+      }
+
+      const { target } = event;
 
       if (isAddMenuOpen && addMenuWrapRef.current && !addMenuWrapRef.current.contains(target)) {
         setIsAddMenuOpen(false);
@@ -524,42 +575,6 @@ export default function Page() {
     };
   }, [clearSelection, isAddMenuOpen, isYoutubeModalOpen, menuVideoId, playerVideoId]);
 
-  const handleGridPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0) {
-      return;
-    }
-
-    if (videos.length === 0 || !videoGridRef.current) {
-      return;
-    }
-
-    const target = event.target as HTMLElement | null;
-    if (!target) {
-      return;
-    }
-
-    if (
-      target.closest(
-        "button, a, input, textarea, select, option, [role='button'], [data-no-marquee='true'], .videoInteractive",
-      )
-    ) {
-      return;
-    }
-
-    marqueeArmedRef.current = true;
-    marqueeStartPointRef.current = { x: event.clientX, y: event.clientY };
-
-    marqueeSelectionModeRef.current = event.altKey
-      ? 'remove'
-      : event.metaKey || event.ctrlKey
-        ? 'add'
-        : selectedIdsRef.current.size > 0
-          ? 'add'
-          : 'replace';
-
-    setSelectionBox(null);
-  };
-
   const openYoutubeModal = () => {
     if (videos.length >= MAX_VIDEOS) {
       setUploadNotice('Video limit reached. Maximum 5 videos.');
@@ -623,10 +638,40 @@ export default function Page() {
     setUploadNotice(null);
   };
 
-  const activePlayerVideo = useMemo(
-    () => (playerVideoId ? videos.find((video) => video.id === playerVideoId) ?? null : null),
+  const activePlayerIndex = useMemo(
+    () => (playerVideoId ? videos.findIndex((video) => video.id === playerVideoId) : -1),
     [playerVideoId, videos],
   );
+
+  const activePlayerVideo = useMemo(
+    () => (activePlayerIndex >= 0 ? videos[activePlayerIndex] : null),
+    [activePlayerIndex, videos],
+  );
+
+  useEffect(() => {
+    if (!activePlayerVideo) {
+      return;
+    }
+
+    const handleArrowNavigation = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft' && activePlayerIndex > 0) {
+        setPlayerVideoId(videos[activePlayerIndex - 1].id);
+      }
+
+      if (event.key === 'ArrowRight' && activePlayerIndex < videos.length - 1) {
+        setPlayerVideoId(videos[activePlayerIndex + 1].id);
+      }
+    };
+
+    document.addEventListener('keydown', handleArrowNavigation);
+
+    return () => {
+      document.removeEventListener('keydown', handleArrowNavigation);
+    };
+  }, [activePlayerIndex, activePlayerVideo, videos]);
+
+  const selectedCount = selectedVideoIds.size;
+  const nonEmptyYoutubeCount = youtubeLinks.filter((value) => value.trim().length > 0).length;
 
   const pageStyle = {
     '--brand-700': '#4b0ea3',
@@ -641,17 +686,40 @@ export default function Page() {
 
   return (
     <main className="uploadPage" style={pageStyle}>
-      <aside className="sidebar">
+      <aside className="sidebar" data-no-marquee="true">
         <h2 className="sidebarTitle">CREATE NEW LISTING</h2>
         <ol className="stepList">
-          <li className="stepItem done">General Info</li>
-          <li className="stepItem done">Upload Photos</li>
-          <li className="stepItem active">Upload Videos</li>
-          <li className="stepItem">Listing Summary</li>
+          <li className="stepItem done">
+            <SpriteIcon name="checkmark_solid" className="stepIcon" aria-hidden="true" />
+            <span>General Info</span>
+          </li>
+          <li className="stepItem done">
+            <SpriteIcon name="checkmark_solid" className="stepIcon" aria-hidden="true" />
+            <span>Upload Photos</span>
+          </li>
+          <li className="stepItem active">
+            <span className="stepDot" aria-hidden="true" />
+            <span>Upload Videos</span>
+          </li>
+          <li className="stepItem">
+            <span className="stepDot" aria-hidden="true" />
+            <span>Listing Summary</span>
+          </li>
         </ol>
       </aside>
 
       <section className="mainSection">
+        <div className="mainTopRow" data-no-marquee="true">
+          <div className="listingHeatChip">
+            <SpriteIcon name="snowflake_outline" className="chipIcon" aria-hidden="true" />
+            <span>Listing Heat</span>
+          </div>
+
+          <button type="button" className="draftExitButton" data-no-marquee="true">
+            Save to Drafts &amp; Exit
+          </button>
+        </div>
+
         <div className="contentWrap">
           <header className="headerRow">
             <div>
@@ -663,7 +731,7 @@ export default function Page() {
             </div>
           </header>
 
-          <div className="toolbarRow">
+          <div className="toolbarRow" data-no-marquee="true">
             <p className="counterText">{videos.length}/{MAX_VIDEOS} videos added</p>
 
             <div className="addMenuWrap" ref={addMenuWrapRef}>
@@ -672,12 +740,15 @@ export default function Page() {
                 className="addVideoTrigger"
                 onClick={() => setIsAddMenuOpen((prev) => !prev)}
                 disabled={videos.length >= MAX_VIDEOS}
+                data-no-marquee="true"
               >
-                Add Video
+                <SpriteIcon name="plus_outline" className="addVideoTriggerIcon" aria-hidden="true" />
+                <span>Add Video</span>
+                <SpriteIcon name="chevron_down_outline" className="addVideoTriggerChevron" aria-hidden="true" />
               </button>
 
               {isAddMenuOpen ? (
-                <div className="addVideoMenu" role="menu" aria-label="Add video options">
+                <div className="addVideoMenu" role="menu" aria-label="Add video options" data-no-marquee="true">
                   <button
                     type="button"
                     className="addVideoMenuItem"
@@ -687,7 +758,8 @@ export default function Page() {
                       fileInputRef.current?.click();
                     }}
                   >
-                    Upload from device
+                    <SpriteIcon name="upload_outline" className="addVideoMenuItemIcon" aria-hidden="true" />
+                    <span>Upload from device</span>
                   </button>
                   <button
                     type="button"
@@ -695,7 +767,8 @@ export default function Page() {
                     role="menuitem"
                     onClick={openYoutubeModal}
                   >
-                    Add YouTube link
+                    <SpriteIcon name="link_outline" className="addVideoMenuItemIcon" aria-hidden="true" />
+                    <span>Add YouTube link</span>
                   </button>
                 </div>
               ) : null}
@@ -719,10 +792,15 @@ export default function Page() {
             }}
           >
             <div className="dropIcon" aria-hidden="true">
-              ▶
+              <SpriteIcon name="plus_outline" className="dropIconGlyph" />
             </div>
-            <p className="dropPrimary">Drag &amp; drop videos here</p>
+            <p className="dropPrimary">Drag and drop videos here</p>
             <p className="dropSecondary">Max 200 MB per file. MP4, MOV, WEBM, MPEG.</p>
+            <button type="button" className="dropGhostButton" data-no-marquee="true">
+              <SpriteIcon name="plus_outline" className="dropGhostButtonIcon" aria-hidden="true" />
+              <span>Add Video</span>
+              <SpriteIcon name="chevron_down_outline" className="dropGhostButtonChevron" aria-hidden="true" />
+            </button>
           </div>
 
           <input
@@ -736,27 +814,25 @@ export default function Page() {
 
           {uploadNotice ? <p className="noticeText">{uploadNotice}</p> : null}
 
-          {selectedVideoIds.size > 0 ? (
+          {selectedCount > 0 ? (
             <div className="bulkActionsSticky">
               <div className="bulkActionsBar">
-                <span className="bulkSelectedCount">{selectedVideoIds.size} selected</span>
+                <span className="bulkSelectedCount">{selectedCount} selected</span>
                 <button
                   type="button"
                   className="bulkDeleteButton"
                   onClick={() => deleteByIds(new Set(selectedVideoIds))}
+                  data-no-marquee="true"
                 >
-                  Delete selected
+                  <SpriteIcon name="trash_outline" className="bulkDeleteIcon" aria-hidden="true" />
+                  <span>Delete selected</span>
                 </button>
               </div>
             </div>
           ) : null}
 
           {videos.length > 0 ? (
-            <div
-              ref={videoGridRef}
-              className={`videoGridWrap ${selectionBox ? 'isSelecting' : ''}`}
-              onPointerDown={handleGridPointerDown}
-            >
+            <div ref={videoGridRef} className={`videoGridWrap ${selectionBox ? 'isSelecting' : ''}`}>
               <div className="videoGrid">
                 {videos.map((video, index) => {
                   const isSelected = selectedVideoIds.has(video.id);
@@ -767,7 +843,10 @@ export default function Page() {
                       data-video-id={video.id}
                       className={`videoCardFrame ${isSelected ? 'isSelected' : ''}`}
                       onClick={(event) => {
-                        const target = event.target as HTMLElement;
+                        const target = event.target;
+                        if (!(target instanceof HTMLElement)) {
+                          return;
+                        }
 
                         if (
                           suppressCardClickRef.current ||
@@ -799,8 +878,9 @@ export default function Page() {
                               clearSelection();
                               setMenuVideoId((prev) => (prev === video.id ? null : video.id));
                             }}
+                            data-no-marquee="true"
                           >
-                            •••
+                            <SpriteIcon name="dots_horizontal_outline" className="videoMenuButtonIcon" />
                           </button>
                         </header>
 
@@ -835,8 +915,9 @@ export default function Page() {
                                 setPlayerVideoId(video.id);
                               }}
                               aria-label="Play video"
+                              data-no-marquee="true"
                             >
-                              ▶
+                              <SpriteIcon name="play_solid" className="videoPlayIcon" />
                             </button>
 
                             <button
@@ -847,15 +928,16 @@ export default function Page() {
                                 toggleVideoSelection(video.id);
                               }}
                               aria-label={isSelected ? 'Deselect video' : 'Select video'}
+                              data-no-marquee="true"
                             >
-                              ✓
+                              <SpriteIcon name="checkmark_solid" className="videoSelectIcon" />
                             </button>
                           </div>
                         </div>
                       </div>
 
                       {menuVideoId === video.id ? (
-                        <div className="videoMenu" role="menu" aria-label="Video actions">
+                        <div className="videoMenu" role="menu" aria-label="Video actions" data-no-marquee="true">
                           {index > 0 ? (
                             <button
                               type="button"
@@ -866,7 +948,7 @@ export default function Page() {
                                 handleSetAsCover(video.id);
                               }}
                             >
-                              Set as cover
+                              <span>Set as cover</span>
                             </button>
                           ) : null}
 
@@ -879,7 +961,8 @@ export default function Page() {
                               deleteByIds(new Set([video.id]));
                             }}
                           >
-                            Delete video
+                            <SpriteIcon name="trash_outline" className="videoMenuItemIcon" aria-hidden="true" />
+                            <span>Delete video</span>
                           </button>
                         </div>
                       ) : null}
@@ -887,25 +970,25 @@ export default function Page() {
                   );
                 })}
               </div>
-
-              {selectionBox ? (
-                <span
-                  className="selectionMarquee"
-                  style={{
-                    height: `${selectionBox.height}px`,
-                    left: `${selectionBox.left}px`,
-                    top: `${selectionBox.top}px`,
-                    width: `${selectionBox.width}px`,
-                  }}
-                />
-              ) : null}
             </div>
           ) : null}
         </div>
       </section>
 
+      {selectionBox ? (
+        <span
+          className="selectionMarquee"
+          style={{
+            height: `${selectionBox.height}px`,
+            left: `${selectionBox.left}px`,
+            top: `${selectionBox.top}px`,
+            width: `${selectionBox.width}px`,
+          }}
+        />
+      ) : null}
+
       {isYoutubeModalOpen ? (
-        <div className="youtubeModalOverlay" onClick={() => setIsYoutubeModalOpen(false)}>
+        <div className="youtubeModalOverlay" onClick={() => setIsYoutubeModalOpen(false)} data-no-marquee="true">
           <div className="youtubeModal" onClick={(event) => event.stopPropagation()}>
             <header className="youtubeModalHeader">
               <div>
@@ -918,14 +1001,19 @@ export default function Page() {
                 onClick={() => setIsYoutubeModalOpen(false)}
                 aria-label="Close"
               >
-                ×
+                <SpriteIcon name="cross_outline" className="modalCloseIcon" />
               </button>
             </header>
 
             <div className="youtubeFields">
               {youtubeLinks.map((link, index) => (
                 <div key={`yt-link-${index}`} className="youtubeFieldRow">
+                  <label htmlFor={`yt-link-${index}`} className="youtubeFieldLabel">
+                    Youtube Link {index + 1}
+                  </label>
+
                   <input
+                    id={`yt-link-${index}`}
                     type="text"
                     className={`youtubeInput ${youtubeErrors[index] ? 'isError' : ''}`}
                     value={link}
@@ -947,7 +1035,7 @@ export default function Page() {
                       }}
                       aria-label="Remove link"
                     >
-                      ×
+                      <SpriteIcon name="cross_outline" className="removeLinkIcon" />
                     </button>
                   ) : null}
 
@@ -970,7 +1058,8 @@ export default function Page() {
               }}
               disabled={youtubeLinks.length >= MAX_VIDEOS - videos.length}
             >
-              Add New Link
+              <SpriteIcon name="plus_outline" className="addNewLinkIcon" aria-hidden="true" />
+              <span>Add New Link</span>
             </button>
 
             <footer className="youtubeModalFooter">
@@ -982,7 +1071,7 @@ export default function Page() {
                 Cancel
               </button>
               <button type="button" className="modalPrimaryButton" onClick={submitYoutubeLinks}>
-                Add Videos
+                {nonEmptyYoutubeCount > 1 ? `Add ${nonEmptyYoutubeCount} Videos` : 'Add Video'}
               </button>
             </footer>
           </div>
@@ -990,7 +1079,7 @@ export default function Page() {
       ) : null}
 
       {activePlayerVideo ? (
-        <div className="playerOverlay" onClick={() => setPlayerVideoId(null)}>
+        <div className="playerOverlay" onClick={() => setPlayerVideoId(null)} data-no-marquee="true">
           <div className="playerDialog" onClick={(event) => event.stopPropagation()}>
             <button
               type="button"
@@ -998,26 +1087,57 @@ export default function Page() {
               onClick={() => setPlayerVideoId(null)}
               aria-label="Close player"
             >
-              ×
+              <SpriteIcon name="cross_outline" className="playerCloseIcon" />
             </button>
 
-            {activePlayerVideo.source === 'upload' ? (
-              <video
-                src={activePlayerVideo.src}
-                controls
-                autoPlay
-                playsInline
-                className="playerVideo"
-              />
-            ) : (
-              <iframe
-                src={activePlayerVideo.embedUrl}
-                title={activePlayerVideo.name}
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-                className="playerIframe"
-              />
-            )}
+            {activePlayerIndex > 0 ? (
+              <button
+                type="button"
+                className="playerNavButton isLeft"
+                onClick={() => setPlayerVideoId(videos[activePlayerIndex - 1].id)}
+                aria-label="Previous video"
+              >
+                <SpriteIcon name="arrow_left_outline" className="playerNavIcon" />
+              </button>
+            ) : null}
+
+            {activePlayerIndex < videos.length - 1 ? (
+              <button
+                type="button"
+                className="playerNavButton isRight"
+                onClick={() => setPlayerVideoId(videos[activePlayerIndex + 1].id)}
+                aria-label="Next video"
+              >
+                <SpriteIcon name="arrow_right_outline" className="playerNavIcon" />
+              </button>
+            ) : null}
+
+            <div className="playerMediaWrap">
+              {activePlayerVideo.source === 'upload' ? (
+                <video
+                  src={activePlayerVideo.src}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="playerVideo"
+                />
+              ) : (
+                <iframe
+                  src={activePlayerVideo.embedUrl}
+                  title={activePlayerVideo.name}
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  className="playerIframe"
+                />
+              )}
+            </div>
+
+            <div className="playerFooter">
+              <p className="playerTitle">{activePlayerVideo.name}</p>
+              <p className="playerCounter">
+                {activePlayerIndex + 1}/{videos.length}
+              </p>
+            </div>
           </div>
         </div>
       ) : null}

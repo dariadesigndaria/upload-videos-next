@@ -29,30 +29,35 @@ input {
     linear-gradient(173deg, #08070c 2%, #201235 56%, #1d285a 88%, #002650 114%),
     linear-gradient(90deg, #22222d 0%, #22222d 100%);
   color: #fff;
-  padding: 40px 24px;
-  width: 260px;
+  padding: 40px 28px;
+  width: 324px;
 }
 
 .sidebarTitle {
   font-family: var(--font-red-hat-display), sans-serif;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 500;
   letter-spacing: 0.03em;
   line-height: 1.2;
-  margin: 0 0 26px;
+  margin: 0 0 28px;
 }
 
 .stepList {
+  display: grid;
+  gap: 12px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .stepItem {
-  color: rgb(255 255 255 / 62%);
+  align-items: center;
+  color: rgb(255 255 255 / 66%);
+  display: flex;
   font-size: 15px;
+  gap: 10px;
   line-height: 22px;
-  padding: 8px 0;
+  min-height: 24px;
 }
 
 .stepItem.done {
@@ -64,26 +69,84 @@ input {
   font-weight: 600;
 }
 
+.stepIcon {
+  color: #fff;
+  height: 14px;
+  width: 14px;
+}
+
+.stepDot {
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 999px;
+  height: 10px;
+  width: 10px;
+}
+
+.stepItem.active .stepDot {
+  background: #fff;
+  border-color: #fff;
+}
+
 .mainSection {
   flex: 1;
   overflow: auto;
-  padding: 40px 36px 56px;
+  padding: 24px 48px 56px;
+}
+
+.mainTopRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+
+.listingHeatChip {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e3e4e8;
+  border-radius: 999px;
+  color: #3a3a45;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+  line-height: 18px;
+  padding: 6px 12px;
+}
+
+.chipIcon {
+  color: #565664;
+  height: 15px;
+  width: 15px;
+}
+
+.draftExitButton {
+  background: #fff;
+  border: 1px solid #d8d9df;
+  border-radius: 8px;
+  color: #2f2f39;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  height: 40px;
+  line-height: 20px;
+  padding: 0 16px;
 }
 
 .contentWrap {
   margin: 0 auto;
-  max-width: 980px;
+  max-width: 564px;
 }
 
 .headerRow {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .pageTitle {
   font-family: var(--font-red-hat-display), sans-serif;
-  font-size: 34px;
+  font-size: 44px;
   font-weight: 600;
-  line-height: 40px;
+  line-height: 52px;
   margin: 0;
 }
 
@@ -91,8 +154,7 @@ input {
   color: var(--gray-700, #61616b);
   font-size: 14px;
   line-height: 20px;
-  margin: 10px 0 0;
-  max-width: 680px;
+  margin: 8px 0 0;
 }
 
 .toolbarRow {
@@ -105,9 +167,9 @@ input {
 
 .counterText {
   color: var(--gray-700, #61616b);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
   margin: 0;
 }
 
@@ -116,16 +178,20 @@ input {
 }
 
 .addVideoTrigger {
+  align-items: center;
   background: var(--brand-700, #4b0ea3);
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #fff;
   cursor: pointer;
+  display: inline-flex;
   font-size: 14px;
   font-weight: 600;
+  gap: 8px;
   height: 40px;
+  justify-content: center;
   line-height: 20px;
-  padding: 0 16px;
+  padding: 0 12px;
 }
 
 .addVideoTrigger:disabled {
@@ -133,26 +199,44 @@ input {
   opacity: 0.45;
 }
 
+.addVideoTriggerIcon,
+.dropGhostButtonIcon,
+.addNewLinkIcon,
+.bulkDeleteIcon,
+.videoMenuItemIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.addVideoTriggerChevron,
+.dropGhostButtonChevron {
+  height: 14px;
+  width: 14px;
+}
+
 .addVideoMenu {
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgb(24 26 32 / 14%);
-  min-width: 220px;
+  border: 1px solid #e4e4ea;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgb(24 26 32 / 16%);
+  min-width: 230px;
   overflow: hidden;
   position: absolute;
   right: 0;
-  top: 44px;
+  top: 46px;
   z-index: 30;
 }
 
 .addVideoMenuItem {
+  align-items: center;
   background: #fff;
   border: 0;
   color: #30303a;
   cursor: pointer;
-  display: block;
+  display: flex;
   font-size: 14px;
   font-weight: 500;
+  gap: 10px;
   line-height: 20px;
   padding: 11px 14px;
   text-align: left;
@@ -163,18 +247,24 @@ input {
   background: #f7f3fe;
 }
 
+.addVideoMenuItemIcon {
+  color: #545462;
+  height: 16px;
+  width: 16px;
+}
+
 .dropZone {
   align-items: center;
-  background: #f8f1ff;
-  border: 2px dashed #ccb9e7;
-  border-radius: 10px;
+  background: #f8f6fb;
+  border: 2px dashed #d6cae7;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
-  min-height: 196px;
-  padding: 28px;
+  min-height: 222px;
+  padding: 28px 22px;
   text-align: center;
   transition:
     background-color 0.16s ease,
@@ -182,35 +272,57 @@ input {
 }
 
 .dropZone.isDragActive {
-  background: #efe3fd;
-  border-color: #8e60cc;
+  background: #f2ebfc;
+  border-color: #9d77d3;
 }
 
 .dropIcon {
   align-items: center;
-  background: #e4d3fb;
+  background: #ece2fc;
   border-radius: 999px;
   color: var(--brand-700, #4b0ea3);
   display: inline-flex;
-  font-size: 20px;
-  height: 44px;
+  height: 48px;
   justify-content: center;
-  width: 44px;
+  width: 48px;
+}
+
+.dropIconGlyph {
+  height: 18px;
+  width: 18px;
 }
 
 .dropPrimary {
   color: var(--brand-700, #4b0ea3);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 600;
-  line-height: 24px;
+  line-height: 26px;
   margin: 0;
 }
 
 .dropSecondary {
-  color: #8052be;
+  color: #7a56b0;
   font-size: 13px;
   line-height: 19px;
   margin: 0;
+}
+
+.dropGhostButton {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d6cae7;
+  border-radius: 8px;
+  color: #4b0ea3;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+  height: 36px;
+  justify-content: center;
+  line-height: 20px;
+  margin-top: 6px;
+  padding: 0 12px;
 }
 
 .noticeText {
@@ -223,36 +335,39 @@ input {
 .bulkActionsSticky {
   position: sticky;
   top: 8px;
-  z-index: 20;
+  z-index: 15;
 }
 
 .bulkActionsBar {
   align-items: center;
-  background: #5b5c67;
-  border-radius: 8px;
+  background: #545561;
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   margin-top: 16px;
-  min-height: 48px;
+  min-height: 50px;
   padding: 8px;
 }
 
 .bulkSelectedCount {
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 20px;
   padding: 0 8px;
 }
 
 .bulkDeleteButton {
+  align-items: center;
   background: #fff;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--danger, #dc362e);
   cursor: pointer;
+  display: inline-flex;
   font-size: 14px;
   font-weight: 600;
+  gap: 7px;
   height: 34px;
   line-height: 20px;
   padding: 0 12px;
@@ -269,17 +384,17 @@ input {
 
 .videoGrid {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .selectionMarquee {
-  background: rgb(75 14 163 / 8%);
+  background: rgb(75 14 163 / 10%);
   border: 1px dashed #4b0ea3;
-  border-radius: 4px;
+  border-radius: 6px;
   pointer-events: none;
-  position: absolute;
-  z-index: 25;
+  position: fixed;
+  z-index: 120;
 }
 
 .videoCardFrame {
@@ -289,17 +404,23 @@ input {
 
 .videoCard {
   background: #fff;
-  border: 2px solid #f6f6f7;
-  border-radius: 8px;
+  border: 2px solid #f2f2f5;
+  border-radius: 10px;
   overflow: hidden;
   transition:
     background-color 0.16s ease,
-    border-color 0.16s ease;
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.videoCard:hover {
+  border-color: #dadbe1;
 }
 
 .videoCardFrame.isSelected .videoCard {
-  background: #f3edfd;
-  border-color: #ccb9e7;
+  background: #f4eefc;
+  border-color: #cdb9ea;
+  box-shadow: 0 0 0 1px #cdb9ea;
 }
 
 .videoCardHeader {
@@ -307,13 +428,13 @@ input {
   display: flex;
   gap: 8px;
   justify-content: space-between;
-  min-height: 40px;
+  min-height: 42px;
   padding: 8px;
 }
 
 .videoTitle {
   color: #2f2f39;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 18px;
   margin: 0;
@@ -326,15 +447,23 @@ input {
   align-items: center;
   background: transparent;
   border: 0;
-  color: #2f2f39;
+  border-radius: 999px;
+  color: #353545;
   cursor: pointer;
   display: inline-flex;
-  font-size: 17px;
   height: 24px;
   justify-content: center;
-  line-height: 1;
   padding: 0;
   width: 24px;
+}
+
+.videoMenuButton:hover {
+  background: #f2f2f5;
+}
+
+.videoMenuButtonIcon {
+  height: 16px;
+  width: 16px;
 }
 
 .videoThumbWrap {
@@ -348,7 +477,7 @@ input {
 
 .videoCardFrame.isSelected .videoThumbWrap {
   --video-scale: 0.9;
-  background: #e9dbfb;
+  background: #ebe0fa;
 }
 
 .videoThumb {
@@ -361,10 +490,12 @@ input {
 }
 
 .coverBadge {
+  align-items: center;
   background: #fcfafe;
   border: 1px solid #ccb9e7;
   border-radius: 999px;
   color: #7e52be;
+  display: inline-flex;
   font-size: 11px;
   font-weight: 600;
   left: 8px;
@@ -376,7 +507,7 @@ input {
 }
 
 .videoHoverOverlay {
-  background: rgb(34 34 34 / 52%);
+  background: rgb(30 30 33 / 52%);
   inset: 0;
   opacity: 0;
   pointer-events: none;
@@ -391,22 +522,26 @@ input {
 
 .videoPlayButton {
   align-items: center;
-  background: rgb(255 255 255 / 12%);
-  border: 1px solid rgb(255 255 255 / 50%);
+  background: rgb(255 255 255 / 14%);
+  border: 1px solid rgb(255 255 255 / 52%);
   border-radius: 999px;
   color: #fff;
   cursor: pointer;
   display: inline-flex;
-  font-size: 20px;
-  height: 40px;
+  height: 42px;
   justify-content: center;
-  left: calc(50% - 20px);
-  line-height: 1;
-  padding: 0 0 0 2px;
+  left: calc(50% - 21px);
+  padding: 0;
   pointer-events: auto;
   position: absolute;
-  top: calc(50% - 20px);
-  width: 40px;
+  top: calc(50% - 21px);
+  width: 42px;
+}
+
+.videoPlayIcon {
+  height: 20px;
+  margin-left: 2px;
+  width: 20px;
 }
 
 .videoSelectButton {
@@ -414,16 +549,15 @@ input {
   background: rgb(231 232 234 / 92%);
   border: 0;
   border-radius: 999px;
-  bottom: 10px;
   color: #2f2f39;
   cursor: pointer;
   display: inline-flex;
-  font-size: 14px;
   height: 28px;
   justify-content: center;
   pointer-events: auto;
   position: absolute;
   right: 10px;
+  top: 10px;
   width: 28px;
 }
 
@@ -433,11 +567,17 @@ input {
   color: #fff;
 }
 
+.videoSelectIcon {
+  height: 14px;
+  width: 14px;
+}
+
 .videoMenu {
   background: #fff;
-  border-radius: 6px;
+  border: 1px solid #e4e4ea;
+  border-radius: 8px;
   box-shadow: 0 8px 24px rgb(24 26 32 / 16%);
-  min-width: 148px;
+  min-width: 156px;
   overflow: hidden;
   position: absolute;
   right: 0;
@@ -446,13 +586,15 @@ input {
 }
 
 .videoMenuItem {
+  align-items: center;
   background: #fff;
   border: 0;
   color: #2f2f39;
   cursor: pointer;
-  display: block;
+  display: flex;
   font-size: 14px;
   font-weight: 500;
+  gap: 8px;
   line-height: 20px;
   padding: 10px 12px;
   text-align: left;
@@ -477,14 +619,14 @@ input {
   justify-content: center;
   padding: 20px;
   position: fixed;
-  z-index: 50;
+  z-index: 180;
 }
 
 .youtubeModal {
   background: #fff;
-  border-radius: 12px;
-  max-width: 560px;
-  padding: 18px;
+  border-radius: 14px;
+  max-width: 540px;
+  padding: 20px;
   width: 100%;
 }
 
@@ -495,9 +637,9 @@ input {
 }
 
 .youtubeModalHeader h2 {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
-  line-height: 30px;
+  line-height: 34px;
   margin: 0;
 }
 
@@ -516,12 +658,15 @@ input {
   color: #2f2f39;
   cursor: pointer;
   display: inline-flex;
-  font-size: 22px;
   height: 32px;
   justify-content: center;
-  line-height: 1;
   padding: 0;
   width: 32px;
+}
+
+.modalCloseIcon {
+  height: 18px;
+  width: 18px;
 }
 
 .youtubeFields {
@@ -535,15 +680,24 @@ input {
   position: relative;
 }
 
+.youtubeFieldLabel {
+  color: #696974;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  margin: 0 0 6px;
+}
+
 .youtubeInput {
   background: #fff;
   border: 1px solid #d5d6da;
   border-radius: 8px;
   color: #2f2f39;
   font-size: 14px;
-  height: 42px;
+  height: 44px;
   line-height: 20px;
-  padding: 0 42px 0 12px;
+  padding: 0 40px 0 12px;
   width: 100%;
 }
 
@@ -563,15 +717,18 @@ input {
   color: #767680;
   cursor: pointer;
   display: inline-flex;
-  font-size: 20px;
   height: 24px;
   justify-content: center;
-  line-height: 1;
   padding: 0;
   position: absolute;
   right: 10px;
-  top: 9px;
+  top: 28px;
   width: 24px;
+}
+
+.removeLinkIcon {
+  height: 16px;
+  width: 16px;
 }
 
 .fieldError {
@@ -582,14 +739,17 @@ input {
 }
 
 .addNewLinkButton {
+  align-items: center;
   background: transparent;
   border: 0;
   color: #4b0ea3;
   cursor: pointer;
+  display: inline-flex;
   font-size: 14px;
   font-weight: 600;
+  gap: 8px;
   line-height: 20px;
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 0;
 }
 
@@ -599,10 +759,12 @@ input {
 }
 
 .youtubeModalFooter {
+  border-top: 1px solid #ececf0;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+  padding-top: 16px;
 }
 
 .modalSecondaryButton,
@@ -628,9 +790,14 @@ input {
 }
 
 .playerDialog {
-  max-height: calc(100vh - 40px);
-  max-width: min(1100px, calc(100vw - 40px));
+  max-width: min(1280px, calc(100vw - 56px));
   position: relative;
+  width: 100%;
+}
+
+.playerMediaWrap {
+  border-radius: 12px;
+  overflow: hidden;
   width: 100%;
 }
 
@@ -638,9 +805,8 @@ input {
 .playerIframe {
   background: #000;
   border: 0;
-  border-radius: 10px;
   display: block;
-  height: min(76vh, 680px);
+  height: min(82vh, 760px);
   width: 100%;
 }
 
@@ -652,24 +818,73 @@ input {
   color: #fff;
   cursor: pointer;
   display: inline-flex;
-  font-size: 26px;
-  height: 36px;
+  height: 38px;
   justify-content: center;
-  line-height: 1;
   padding: 0;
   position: absolute;
-  right: -8px;
-  top: -8px;
-  width: 36px;
+  right: 12px;
+  top: 12px;
+  width: 38px;
+  z-index: 2;
 }
 
-@media (max-width: 1120px) {
+.playerCloseIcon,
+.playerNavIcon {
+  height: 20px;
+  width: 20px;
+}
+
+.playerNavButton {
+  align-items: center;
+  background: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: calc(50% - 20px);
+  width: 40px;
+  z-index: 2;
+}
+
+.playerNavButton.isLeft {
+  left: 12px;
+}
+
+.playerNavButton.isRight {
+  right: 12px;
+}
+
+.playerFooter {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.playerTitle,
+.playerCounter {
+  color: #f9f9fb;
+  font-size: 13px;
+  line-height: 18px;
+  margin: 0;
+}
+
+.playerCounter {
+  font-weight: 600;
+}
+
+@media (max-width: 1240px) {
   .videoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 980px) {
   .uploadPage {
     flex-direction: column;
   }
@@ -679,22 +894,29 @@ input {
   }
 
   .stepList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mainSection {
-    padding: 24px 16px 40px;
+    padding: 24px 18px 40px;
+  }
+
+  .mainTopRow {
+    margin-bottom: 20px;
+  }
+
+  .contentWrap {
+    max-width: 100%;
   }
 
   .pageTitle {
-    font-size: 30px;
-    line-height: 36px;
+    font-size: 36px;
+    line-height: 42px;
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 760px) {
+  .mainTopRow,
   .toolbarRow {
     align-items: flex-start;
     flex-direction: column;
@@ -705,6 +927,7 @@ input {
   }
 
   .addVideoTrigger {
+    justify-content: space-between;
     width: 100%;
   }
 
@@ -725,19 +948,34 @@ input {
   }
 
   .bulkDeleteButton {
+    justify-content: center;
     width: 100%;
   }
 
   .youtubeModal {
-    padding: 16px 14px;
+    padding: 16px;
   }
 
   .youtubeModalHeader h2 {
-    font-size: 22px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .youtubeModalFooter {
+    flex-direction: column-reverse;
+  }
+
+  .modalSecondaryButton,
+  .modalPrimaryButton {
+    width: 100%;
   }
 
   .playerVideo,
   .playerIframe {
     height: min(64vh, 420px);
+  }
+
+  .playerFooter {
+    gap: 8px;
   }
 }
